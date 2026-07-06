@@ -1,0 +1,1189 @@
+<!DOCTYPE html>
+<html lang="vi">
+
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+
+    <title>RUNNING OUT ARSENIC</title>
+
+
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+
+        body {
+            overflow: hidden;
+            background: #050000;
+            font-family: "Arial", sans-serif;
+            color: #eee;
+        }
+
+
+        canvas {
+            display: block;
+            background: radial-gradient(circle at center, #1a0a0a 0%, #0a0505 60%, #000 100%);
+        }
+
+
+        /* BANNER GIAO DIỆN UI TỐI GIẢN CHẤT KINH DỊ */
+        .ui {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            z-index: 100;
+            padding: 20px;
+            min-width: 260px;
+            border-radius: 4px;
+            background: rgba(15, 10, 10, 0.9);
+            border: 2px solid #440000;
+            backdrop-filter: blur(8px);
+            box-shadow: 0 0 15px rgba(255, 0, 0, 0.2);
+        }
+
+
+        .title {
+            width: 100%;
+            display: flex;
+            justify-content: center;
+            padding-bottom: 12px;
+            margin-bottom: 10px;
+            border-bottom: 1px solid #440000;
+            font-family: "Arial", sans-serif;
+            font-size: 34px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: #ff3333;
+            text-shadow: 0 0 5px #ff0000, 2px 2px 2px #000;
+        }
+
+
+        .stat {
+            margin: 12px 0;
+            font-size: 16px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+
+        .stat-label {
+            color: #bbb;
+            font-weight: bold;
+        }
+
+
+        .stat-value {
+            font-weight: bold;
+        }
+
+
+        #score {
+            color: #ffe066;
+            text-shadow: 0 0 8px #ccac00;
+        }
+
+
+        #hp {
+            color: #ff6666;
+            text-shadow: 0 0 8px #cc0000;
+        }
+
+
+        #fuel {
+            color: #66ffb3;
+            text-shadow: 0 0 8px #00cc66;
+        }
+
+
+        .guide {
+            position: fixed;
+            bottom: 20px;
+            left: 20px;
+            color: #666;
+            font-size: 14px;
+            z-index: 100;
+            background: rgba(0, 0, 0, 0.6);
+            padding: 6px 12px;
+            border-radius: 4px;
+            border: 1px solid #222;
+        }
+
+
+        /* THÀNH BẠI ĐỀU THIẾT KẾ U ÁM */
+        #gameOver {
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.98);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+            color: white;
+            z-index: 999;
+            text-align: center;
+        }
+
+
+        #gameOver h1 {
+            font-family: "Arial", sans-serif;
+            font-size: 80px;
+            color: #ff1a1a;
+            text-shadow: 0 0 20px #ff0000;
+            margin-bottom: 20px;
+        }
+
+
+        #finalScore {
+            font-size: 20px;
+            color: #ccc;
+            margin-bottom: 40px;
+        }
+
+
+        #gameOver button {
+            padding: 15px 40px;
+            border: 2px solid #880000;
+            border-radius: 4px;
+            background: #220000;
+            color: #ffcccc;
+            font-family: "Arial", sans-serif;
+            font-size: 18px;
+            font-weight: bold;
+            text-transform: uppercase;
+            cursor: pointer;
+            transition: all 0.3s;
+            box-shadow: 0 0 10px rgba(255, 0, 0, 0.3);
+        }
+
+
+        #gameOver button:hover {
+            background: #440000;
+            color: #fff;
+            box-shadow: 0 0 20px rgba(255, 0, 0, 0.6);
+            transform: scale(1.05);
+        }
+
+        #nextBtn {
+
+            margin-top: 15px;
+            padding: 12px 35px;
+            font-size: 18px;
+            font-weight: 900;
+            letter-spacing: 2px;
+            background: #4a0404;
+            color: #ffffff;
+            border: 2px solid #ff0000;
+            border-radius: 4px;
+            cursor: pointer;
+            box-shadow: 0 0 15px rgba(255, 0, 0, 0.4);
+            transition: 0.2s ease;
+        }
+
+        #nextBtn:hover {
+            background: #ff0000;
+
+            color: #000000;
+            box-shadow: 0 0 25px #ff0000;
+            transform: scale(1.05);
+
+
+        }
+
+
+        /* JOYSTICK ĐỎ THẪM DI ĐỘNG */
+        #joystick {
+            position: fixed;
+            left: 40px;
+            bottom: 40px;
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            background: rgba(40, 0, 0, 0.2);
+            border: 2px solid rgba(100, 0, 0, 0.4);
+            display: none;
+            z-index: 200;
+            backdrop-filter: blur(2px);
+        }
+
+
+        #stick {
+            position: absolute;
+            width: 50px;
+            height: 50px;
+            left: 50%;
+            top: 50%;
+            border-radius: 50%;
+            background: rgba(150, 0, 0, 0.6);
+            border: 2px solid #ff4444;
+            transform: translate(-50%, -50%);
+            box-shadow: 0 0 10px rgba(255, 0, 0, 0.5);
+        }
+
+
+        @media(pointer:coarse) {
+            #joystick {
+                display: block;
+            }
+        }
+
+        #warning-screen {
+            position: fixed;
+            inset: 0;
+            background: radial-gradient(circle at center, #2b0015 0%, #110008 35%, #050505 100%);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+        }
+
+        .warning-box {
+            width: min(700px, 90%);
+            text-align: center;
+            color: white;
+        }
+
+        .warning-box h1 {
+            color: #ff0000;
+            text-shadow: 0 0 10px red;
+        }
+
+        .warning-box p {
+            line-height: 1.7;
+        }
+
+        #warning-continue {
+            margin-top: 20px;
+            padding: 10px 30px;
+            font-size: 18px;
+            font-weight: bold;
+            cursor: pointer;
+            color: white;
+            background: #4a0404;
+            border: 2px solid red;
+            border-radius: 6px;
+            transition: .2s;
+        }
+
+        #warning-continue:hover {
+            background: red;
+            color: black;
+        }
+    </style>
+
+</head>
+
+
+<body>
+
+    <div id="warning-screen">
+        <div class="warning-box">
+            <h1>HƯỚNG DẪN</h1>
+
+            <p>
+                dùng các phím AWSD (các phím mũi tên) để di chuyển, hoặc sử dụng cần điều khiển ảo ở góc trái
+            </p>
+
+            <p>
+                bạn cần thu thập đủ 25 món đồ trước khi đèn pin của bạn hết năng lượng, hãy cẩn thận với những con quái
+                vật
+                đang rình rập trong bóng tối, chúng sẽ làm giảm tinh thần của bạn nếu chạm phải. Khi điểm tinh thần và
+                năng
+                lượng của đèn của bạn về 0, bạn sẽ chết. Hãy cố gắng sống sót và thu thập tất cả các món đồ để mở khóa
+                tiếp
+                cốt truyện!
+            </p>
+
+            <button id="warning-continue">
+                tiếp tục
+            </button>
+        </div>
+    </div>
+
+    <div class="ui">
+        <div class="title">!!RUNNING!!</div>
+        <div class="stat">⭐ Đồ vật: <span id="score">0 / 25</span></div>
+        <div class="stat">❤️ Tinh thần: <span id="hp">5</span></div>
+        <div class="stat">🔋 Đèn pin: <span id="fuel">100</span>%</div>
+    </div>
+
+
+    <div class="guide"></div>
+
+
+    <div id="gameOver">
+        <h1>BẠN ĐÃ CHẾT</h1>
+        <p id="finalScore"></p>
+        <button id="restartBtn" onclick="restartGame()">CHƠI LẠI</button>
+        <button id="nextBtn" onclick="nextLevel()">CHƠI TIẾP</button>
+
+    </div>
+
+
+    <div id="joystick">
+        <div id="stick"></div>
+    </div>
+
+
+    <canvas id="game"></canvas>
+
+    <div id="rotate-screen">
+        <div class="rotate-box">
+            <h2>Xoay ngang màn hình</h2>
+            <p>Vui lòng quay thiết bị sang chế độ ngang để chơi tốt nhất.</p>
+        </div>
+    </div>
+
+    <audio id="bgm" src="../story/theme.mp3" preload="auto" loop></audio>
+
+
+    <script>
+        function updateOrientationOverlay() {
+            const overlay = document.getElementById('rotate-screen');
+            if (window.matchMedia('(orientation: portrait)').matches) {
+                overlay.style.display = 'flex';
+            } else {
+                overlay.style.display = 'none';
+                if (screen.orientation && screen.orientation.lock) {
+                    screen.orientation.lock('landscape').catch(() => { });
+                }
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const bgm = document.getElementById("bgm");
+            const warning = document.getElementById("warning-screen");
+            const warningBtn = document.getElementById("warning-continue");
+
+            updateOrientationOverlay();
+
+            warningBtn.addEventListener("click", () => {
+
+                warning.style.display = "none";
+
+                if (window.AudioContext || window.webkitAudioContext) {
+                    const ctx = new (window.AudioContext || window.webkitAudioContext)();
+                    if (ctx.state === "suspended") {
+                        ctx.resume();
+                    }
+                }
+
+                bgm.currentTime = 0;
+                bgm.volume = 1;
+
+                bgm.play().catch(() => {
+                    console.log("Không thể phát nhạc.");
+                });
+            });
+
+            warningBtn.addEventListener("click", () => {
+
+                warning.style.display = "none";
+                overlay.style.display = "flex";
+
+            });
+
+            continueBtn.addEventListener("click", startAudio);
+            continueBtn.addEventListener("touchstart", startAudio);
+        });
+
+        window.addEventListener('resize', updateOrientationOverlay);
+        window.addEventListener('orientationchange', updateOrientationOverlay);
+        /* =========================
+        CANVAS
+        ========================= */
+        const canvas = document.getElementById("game");
+        const ctx = canvas.getContext("2d");
+        let w, h;
+
+
+        function resize() {
+            w = canvas.width = innerWidth;
+            h = canvas.height = innerHeight;
+        }
+        resize();
+        addEventListener("resize", resize);
+
+
+        /* =========================
+        HELPERS
+        ========================= */
+        function random(min, max) {
+            return Math.random() * (max - min) + min;
+        }
+
+
+        /* =========================
+        WORLD
+        ========================= */
+        const WORLD = 1500;
+
+
+        /* =========================
+        UI
+        ========================= */
+        const scoreEl = document.getElementById("score");
+        const hpEl = document.getElementById("hp");
+        const fuelEl = document.getElementById("fuel");
+        const gameOverScreen = document.getElementById("gameOver");
+        const finalScore = document.getElementById("finalScore");
+        const restartBtn = document.getElementById("restartBtn");
+        const nextBtn = document.getElementById("nextBtn");
+
+
+        /* =========================
+        STATE
+        ========================= */
+        let score;
+        let hp;
+        let fuel;
+        let gameOver;
+        const WIN_SCORE = 25;
+        const camera = { x: 0, y: 0 };
+
+
+        /* =========================
+        INPUT
+        ========================= */
+        const keys = {};
+        addEventListener("keydown", e => { keys[e.code] = true; });
+        addEventListener("keyup", e => { keys[e.code] = false; });
+
+
+        /* =========================
+        JOYSTICK
+        ========================= */
+        const joystick = document.getElementById("joystick");
+        const stick = document.getElementById("stick");
+        const joy = { active: false, x: 0, y: 0 };
+
+
+        function handleJoystick(e) {
+            const touch = e.touches[0];
+            const rect = joystick.getBoundingClientRect();
+            const centerX = rect.left + rect.width / 2;
+            const centerY = rect.top + rect.height / 2;
+
+
+            let dx = touch.clientX - centerX;
+            let dy = touch.clientY - centerY;
+            const dist = Math.min(Math.hypot(dx, dy), 40);
+            const angle = Math.atan2(dy, dx);
+
+
+            joy.x = Math.cos(angle) * (dist / 40);
+            joy.y = Math.sin(angle) * (dist / 40);
+            joy.active = true;
+
+
+            stick.style.transform = `translate(calc(-50% + ${joy.x * 40}px), calc(-50% + ${joy.y * 40}px))`;
+        }
+
+
+        joystick.addEventListener("touchstart", handleJoystick);
+        joystick.addEventListener("touchmove", handleJoystick);
+        joystick.addEventListener("touchend", () => {
+            joy.active = false;
+            joy.x = 0;
+            joy.y = 0;
+            stick.style.transform = "translate(-50%,-50%)";
+        });
+
+
+        /* =========================
+        SHIP
+        ========================= */
+        let ship;
+        function createShip() {
+            ship = {
+                x: WORLD / 2,
+                y: WORLD / 2,
+                vx: 0,
+                vy: 0,
+                size: 20, // <-- Tăng lên nếu ảnh to, giảm đi nếu ảnh nhỏ
+                speed: 0.35,
+                angle: 0,
+                invincible: 0
+            };
+        }
+
+
+        /* =========================
+        WALLS (BỨC TƯỜNG) & MONSTERS
+        ========================= */
+        function createPlanets() {
+            planets = [
+                /*=========================
+                    TƯỜNG NGOÀI (Giữ nguyên để giới hạn map)
+                =========================*/
+                { x: 100, y: 100, w: 1300, h: 70 },
+                { x: 100, y: 1330, w: 1300, h: 70 },
+                { x: 100, y: 170, w: 70, h: 1160 },
+                { x: 1330, y: 170, w: 70, h: 1160 },
+
+                /*=========================
+                    CỘT DỌC (Đã cắt ngắn để tạo lối đi trên/dưới)
+                =========================*/
+                // Cột dọc 1 (X: 350) - Tạo khoảng trống ở giữa và hai đầu
+                { x: 350, y: 250, w: 80, h: 350 },
+                { x: 350, y: 820, w: 80, h: 420 },
+
+                // Cột dọc 2 (X: 690) - Tạo hành lang thông suốt trung tâm
+                { x: 690, y: 250, w: 80, h: 260 },
+                { x: 690, y: 650, w: 80, h: 420 },
+
+                // Cột dọc 3 (X: 1030)
+                { x: 1030, y: 300, w: 80, h: 280 },
+                { x: 1030, y: 830, w: 80, h: 380 },
+
+                /*=========================
+                    TƯỜNG NGANG (Đã chừa khoảng trống ở các góc nối)
+                =========================*/
+                // Tầng ngang 1 (Y: 350)
+                { x: 220, y: 350, w: 130, h: 80 }, // Cắt bớt phần chạm tường ngoài
+                { x: 550, y: 350, w: 400, h: 80 }, // Thu gọn để tạo khoảng trống với cột dọc
+
+                // Tầng ngang 2 (Y: 650)
+                { x: 490, y: 650, w: 200, h: 80 },
+                { x: 950, y: 650, w: 280, h: 80 },
+
+                // Tầng ngang 3 (Y: 950)
+                { x: 220, y: 950, w: 130, h: 80 },
+                { x: 600, y: 950, w: 350, h: 80 },
+
+                // Tầng ngang sát đáy (Y: 1180)
+                { x: 500, y: 1180, w: 400, h: 80 }
+            ];
+            createMonsters();
+        }
+
+        function createMonsters() {
+
+            monsters = [];
+
+            while (monsters.length < 8) {
+
+                let x = random(150, WORLD - 150);
+                let y = random(150, WORLD - 150);
+
+                if (isInsideWall(x, y)) continue;
+
+                monsters.push({
+
+                    x: x,
+                    y: y,
+
+                    radius: 16,
+
+                    speed: 1.2
+
+                });
+
+            }
+
+        }
+
+
+
+        /* =========================
+        RESOURCES
+        ========================= */
+        let starsCollect = [];
+        let fuelOrbs = [];
+        let monsters = [];
+
+
+        function isInsideWall(x, y, padding = 30) {
+            for (const p of planets) {
+                if (x >= p.x - padding && x <= p.x + p.w + padding &&
+                    y >= p.y - padding && y <= p.y + p.h + padding) {
+                    return true;
+                }
+            }
+            return false;
+        }
+
+
+        function createResources() {
+            starsCollect = [];
+            fuelOrbs = [];
+
+
+            /* GOLD STARS */
+            while (starsCollect.length < 25) {
+                let rx = random(100, WORLD - 100);
+                let ry = random(100, WORLD - 100);
+                if (!isInsideWall(rx, ry)) {
+                    starsCollect.push({ x: rx, y: ry, r: 18 });
+                }
+            }
+
+
+            /* ENERGY ORBS */
+            while (fuelOrbs.length < 3) {
+                let rx = random(100, WORLD - 100);
+                let ry = random(100, WORLD - 100);
+                if (!isInsideWall(rx, ry)) {
+                    fuelOrbs.push({ x: rx, y: ry, r: 14 });
+                }
+            }
+        }
+
+
+        /* =========================
+        PARTICLES
+        ========================= */
+        let particles = [];
+        function createParticles(x, y, color, count) {
+            for (let i = 0; i < count; i++) {
+                particles.push({
+                    x, y,
+                    vx: random(-3, 3),
+                    vy: random(-3, 3),
+                    size: random(2, 5),
+                    life: 60,
+                    color
+                });
+            }
+        }
+
+        // Tạo đối tượng ảnh cho nhân vật
+        const shipImage = new Image();
+        shipImage.src = "../images/Arsechibi_run.PNG"; // Thay bằng đường dẫn ảnh của bạn (.png trong suốt là tốt nhất)
+        /* =========================
+        INIT
+        ========================= */
+        function init() {
+            score = 0;
+            hp = 5;
+            fuel = 100;
+            gameOver = false;
+
+
+            createShip();
+            createPlanets();
+            createResources();
+
+
+            particles = [];
+            gameOverScreen.style.display = "none";
+            restartBtn.style.display = "inline-block";
+            nextBtn.style.display = "none";
+        }
+        init();
+
+
+        /* =========================
+        UPDATE SHIP
+        ========================= */
+        function updateShip() {
+            let inputX = 0;
+            let inputY = 0;
+
+
+            if (keys["ArrowUp"] || keys["KeyW"]) inputY -= 1;
+            if (keys["ArrowDown"] || keys["KeyS"]) inputY += 1;
+            if (keys["ArrowLeft"] || keys["KeyA"]) inputX -= 1;
+            if (keys["ArrowRight"] || keys["KeyD"]) inputX += 1;
+
+
+            if (joy.active) {
+                inputX = joy.x;
+                inputY = joy.y;
+            }
+
+
+            const len = Math.hypot(inputX, inputY);
+            if (len > 0) {
+                inputX /= len;
+                inputY /= len;
+
+
+                ship.vx += inputX * ship.speed;
+                ship.vy += inputY * ship.speed;
+
+
+                fuel -= 0.15;
+                /* Đã xóa dòng tạo hạt đuôi màu cam (createParticles) tại đây */
+            }
+
+
+            ship.vx *= 0.985;
+            ship.vy *= 0.985;
+
+
+            const moveSpeed = 5;
+
+            if (inputX !== 0 || inputY !== 0) {
+                ship.vx = inputX * moveSpeed;
+                ship.vy = inputY * moveSpeed;
+            } else {
+                ship.vx = 0;
+                ship.vy = 0;
+            }
+
+            ship.x += ship.vx;
+            ship.y += ship.vy;
+
+
+            /* WORLD BORDER */
+            if (ship.x < 0) { ship.x = 0; ship.vx *= -0.5; }
+            else if (ship.x > WORLD) { ship.x = WORLD; ship.vx *= -0.5; }
+            if (ship.y < 0) { ship.y = 0; ship.vy *= -0.5; }
+            else if (ship.y > WORLD) { ship.y = WORLD; ship.vy *= -0.5; }
+
+
+            /* CAMERA */
+            camera.x += (ship.x - w / 2 - camera.x) * 0.08;
+            camera.y += (ship.y - h / 2 - camera.y) * 0.08;
+
+
+            /* INVINCIBLE TIMER */
+            if (ship.invincible > 0) {
+                ship.invincible--;
+            }
+        }
+
+
+        /* =========================
+        BOUNDARY
+        ========================= */
+        function drawBoundary() {
+            ctx.save();
+            ctx.setLineDash([]);
+            ctx.strokeStyle = "#ff2d2d";
+            ctx.shadowColor = "#ff0000";
+            ctx.lineWidth = 12;
+            ctx.shadowBlur = 30;
+            ctx.strokeRect(0, 0, WORLD, WORLD);
+            ctx.restore();
+        }
+
+
+        /* =========================
+        DRAW & UPDATE PLANETS (WALLS) + MONSTERS
+        ========================= */
+        function drawPlanets() {
+
+            planets.forEach(p => {
+
+                ctx.fillStyle = "#000";
+                ctx.fillRect(p.x, p.y, p.w, p.h);
+
+                let closestX = Math.max(p.x, Math.min(ship.x, p.x + p.w));
+                let closestY = Math.max(p.y, Math.min(ship.y, p.y + p.h));
+
+                // Va chạm người chơi với tường
+                if (
+                    ship.x + ship.size > p.x &&
+                    ship.x - ship.size < p.x + p.w &&
+                    ship.y + ship.size > p.y &&
+                    ship.y - ship.size < p.y + p.h
+                ) {
+
+                    const left = (ship.x + ship.size) - p.x;
+                    const right = (p.x + p.w) - (ship.x - ship.size);
+                    const top = (ship.y + ship.size) - p.y;
+                    const bottom = (p.y + p.h) - (ship.y - ship.size);
+
+                    const minOverlap = Math.min(left, right, top, bottom);
+
+                    if (minOverlap === left) {
+                        ship.x = p.x - ship.size;
+                        ship.vx = 0;
+                    }
+                    else if (minOverlap === right) {
+                        ship.x = p.x + p.w + ship.size;
+                        ship.vx = 0;
+                    }
+                    else if (minOverlap === top) {
+                        ship.y = p.y - ship.size;
+                        ship.vy = 0;
+                    }
+                    else {
+                        ship.y = p.y + p.h + ship.size;
+                        ship.vy = 0;
+                    }
+                }
+
+            });
+
+        }
+
+        function drawMonsters() {
+
+            monsters.forEach(m => {
+
+                let dx = ship.x - m.x;
+                let dy = ship.y - m.y;
+
+                let dist = Math.hypot(dx, dy);
+
+                if (dist > 1) {
+
+                    let nx = m.x + dx / dist * m.speed;
+                    let ny = m.y + dy / dist * m.speed;
+
+                    if (!isInsideWall(nx, ny, m.radius)) {
+
+                        m.x = nx;
+                        m.y = ny;
+
+                    }
+
+                }
+
+                ctx.beginPath();
+                ctx.arc(m.x, m.y, m.radius, 0, Math.PI * 2);
+                ctx.fillStyle = "#120000";
+                ctx.shadowBlur = 15;
+                ctx.shadowColor = "red";
+                ctx.fill();
+
+                ctx.beginPath();
+                ctx.arc(m.x - 5, m.y - 4, 2.5, 0, Math.PI * 2);
+                ctx.arc(m.x + 5, m.y - 4, 2.5, 0, Math.PI * 2);
+                ctx.fillStyle = "red";
+                ctx.fill();
+
+                if (ship.invincible <= 0) {
+
+                    if (Math.hypot(ship.x - m.x, ship.y - m.y) < ship.size + m.radius) {
+
+                        hp--;
+
+                        ship.invincible = 90;
+
+                        ship.x = WORLD / 2;
+                        ship.y = WORLD / 2;
+
+                        ship.vx = 0;
+                        ship.vy = 0;
+
+                    }
+
+                }
+
+            });
+
+        }
+
+
+        /* =========================
+        RESOURCES
+        ========================= */
+        function drawResources() {
+            /* GOLD STARS */
+            starsCollect.forEach((s, index) => {
+                ctx.save();
+                ctx.translate(s.x, s.y);
+                ctx.beginPath();
+
+
+                for (let i = 0; i < 5; i++) {
+                    ctx.lineTo(
+                        Math.cos((18 + i * 72) / 180 * Math.PI) * s.r,
+                        -Math.sin((18 + i * 72) / 180 * Math.PI) * s.r
+                    );
+                    ctx.lineTo(
+                        Math.cos((54 + i * 72) / 180 * Math.PI) * (s.r / 2),
+                        -Math.sin((54 + i * 72) / 180 * Math.PI) * (s.r / 2)
+                    );
+                }
+
+
+                ctx.closePath();
+                ctx.fillStyle = "#ece75f";
+                ctx.shadowColor = "#fff8cc";
+                ctx.shadowColor = "gold";
+                ctx.fill();
+                ctx.restore();
+
+
+                const dist = Math.hypot(ship.x - s.x, ship.y - s.y);
+                if (dist < 35) {
+                    score++;
+                    createParticles(s.x, s.y, "gold", 35);
+                    starsCollect.splice(index, 1);
+                }
+            });
+
+
+            /* ENERGY ORBS */
+            fuelOrbs.forEach((f, index) => {
+                ctx.save();
+                ctx.beginPath();
+                ctx.arc(f.x, f.y, f.r, 0, Math.PI * 2);
+                ctx.fillStyle = "#00ff99";
+                ctx.shadowBlur = 45;
+                ctx.shadowColor = "#00ff99";
+                ctx.fill();
+
+
+                /* CORE */
+                ctx.beginPath();
+                ctx.arc(f.x, f.y, f.r / 2, 0, Math.PI * 2);
+                ctx.fillStyle = "white";
+                ctx.globalAlpha = .8;
+                ctx.fill();
+                ctx.restore();
+
+
+                const dist = Math.hypot(ship.x - f.x, ship.y - f.y);
+                if (dist < 30) {
+                    fuel += 35;
+                    if (fuel > 100) fuel = 100;
+                    createParticles(f.x, f.y, "#00ff99", 45);
+
+
+                    let rx, ry;
+                    do {
+                        rx = random(100, WORLD - 100);
+                        ry = random(100, WORLD - 100);
+                    } while (isInsideWall(rx, ry));
+
+
+                    fuelOrbs[index] = { x: rx, y: ry, r: 14 };
+                }
+            });
+        }
+
+
+        /* =========================
+        PARTICLES
+        ========================= */
+        function drawParticles() {
+            for (let i = particles.length - 1; i >= 0; i--) {
+                const p = particles[i];
+                p.x += p.vx;
+                p.y += p.vy;
+                p.life--;
+
+
+                ctx.save();
+                ctx.globalAlpha = p.life / 60;
+                ctx.beginPath();
+                ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+                ctx.fillStyle = p.color;
+                ctx.shadowBlur = 20;
+                ctx.shadowColor = p.color;
+                ctx.fill();
+                ctx.restore();
+
+
+                if (p.life <= 0) {
+                    particles.splice(i, 1);
+                }
+            }
+        }
+
+
+        /* =========================
+        SHIP
+        ========================= */
+        function drawShip() {
+            ctx.save();
+            // Di chuyển canvas đến vị trí của nhân vật
+            ctx.translate(ship.x, ship.y);
+            // Xoay canvas theo hướng di chuyển của nhân vật
+            ctx.rotate(ship.angle);
+
+            // Hiệu ứng nhấp nháy khi nhân vật đang bất tử (vừa bị quái cắn)
+            if (ship.invincible > 0 && Math.floor(ship.invincible / 4) % 2 === 0) {
+                ctx.globalAlpha = 0.3;
+            }
+
+            // Thiết lập kích thước hiển thị của ảnh nhân vật (ví dụ: 40x40 pixel)
+            const imgWidth = 100;
+            const imgHeight = 100;
+
+            // Vẽ ảnh với tâm trùng với tọa độ ship.x, ship.y
+            ctx.drawImage(shipImage, -imgWidth / 2, -imgHeight / 2, imgWidth, imgHeight);
+
+            ctx.restore();
+        }
+
+        /* =========================
+        UI
+        ========================= */
+        function updateUI() {
+            scoreEl.textContent = `${score} / ${WIN_SCORE}`;
+            hpEl.textContent = hp < 0 ? 0 : hp;
+            fuelEl.textContent = Math.max(0, Math.floor(fuel));
+        }
+
+
+        /* =========================
+        GAME OVER
+        ========================= */
+        function checkGameOver() {
+            if (score >= WIN_SCORE) {
+
+                gameOver = true;
+
+                document.querySelector("#gameOver h1").textContent = "CHIẾN THẮNG";
+
+                finalScore.textContent =
+                    `Bạn đã thu thập đủ ${WIN_SCORE} món đồ!`;
+
+                restartBtn.style.display = "none";
+
+                nextBtn.style.display = "inline-block";
+
+                gameOverScreen.style.display = "flex";
+
+                return;
+            }
+
+
+            if (fuel <= 0 || hp <= 0) {
+
+                gameOver = true;
+
+                document.querySelector("#gameOver h1").textContent = "BẠN ĐÃ CHẾT";
+
+                finalScore.textContent =
+                    `Bạn chỉ thu thập được ${score}/${WIN_SCORE} món đồ`;
+
+                restartBtn.style.display = "inline-block";
+
+                nextBtn.style.display = "none";
+
+                gameOverScreen.style.display = "flex";
+            }
+        }
+
+
+        function drawFlashlight() {
+            ctx.save();
+            ctx.setTransform(1, 0, 0, 1, 0, 0);
+
+
+            const sx = ship.x - camera.x;
+            const sy = ship.y - camera.y;
+
+
+            const light = ctx.createRadialGradient(
+                sx, sy, 35,
+                sx, sy, 230
+            );
+
+
+            light.addColorStop(0, "rgba(255,255,220,0)");
+            light.addColorStop(.25, "rgba(255,248,210,.04)");
+            light.addColorStop(.45, "rgba(255,220,120,.08)");
+            light.addColorStop(.7, "rgba(0,0,0,.65)");
+            light.addColorStop(1, "rgba(0,0,0,.98)");
+
+
+            ctx.fillStyle = light;
+            ctx.fillRect(0, 0, w, h);
+
+
+            ctx.restore();
+        }
+
+
+        /* =========================
+        DRAW
+        ========================= */
+        function draw() {
+            ctx.clearRect(0, 0, w, h);
+            ctx.save();
+            ctx.translate(-camera.x, -camera.y);
+
+
+            // Sàn
+            ctx.fillStyle = "#291e1a";
+            ctx.fillRect(0, 0, WORLD, WORLD);
+
+
+            // Vân gỗ
+            ctx.lineWidth = 2;
+
+
+            for (let i = 0; i < WORLD; i += 48) {
+
+
+                ctx.beginPath();
+                ctx.strokeStyle = "rgba(35,18,8,.35)";
+                ctx.moveTo(i, 0);
+                ctx.lineTo(i, WORLD);
+                ctx.stroke();
+
+
+                ctx.beginPath();
+                ctx.strokeStyle = "rgba(255,255,255,.03)";
+                ctx.moveTo(i + 2, 0);
+                ctx.lineTo(i + 2, WORLD);
+                ctx.stroke();
+            }
+
+
+
+
+
+
+            drawBoundary();
+            drawPlanets();
+            drawMonsters();
+            drawResources();
+            drawParticles();
+            drawShip();
+            drawFlashlight();
+
+
+            ctx.restore();
+        }
+
+
+        /* =========================
+        UPDATE
+        ========================= */
+        function update() {
+            if (gameOver) return;
+            updateShip();
+            updateUI();
+            checkGameOver();
+        }
+
+
+        /* =========================
+        LOOP
+        ========================= */
+        function loop() {
+            update();
+            draw();
+            requestAnimationFrame(loop);
+        }
+
+
+        loop();
+
+
+        function restartGame() {
+
+            nextBtn.style.display = "none";
+
+            restartBtn.style.display = "inline-block";
+
+            init();
+
+        }
+        function nextLevel() {
+
+            window.location.href = "../OWARI/index2.html";
+
+        }
+
+    </script>
+</body>
+
+
+</html>

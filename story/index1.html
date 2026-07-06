@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1.0">
+    <title>Silent Auditorium</title>
+    <link rel="stylesheet" href="./main1.css">
+
+    <style>
+        #warning-screen {
+            position: fixed;
+            inset: 0;
+            background: radial-gradient(circle at center, #2b0015 0%, #110008 35%, #050505 100%);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+        }
+
+        .warning-box {
+            width: min(700px, 90%);
+            text-align: center;
+            color: white;
+        }
+
+        .warning-box h1 {
+            color: #ff0000;
+            text-shadow: 0 0 10px red;
+        }
+
+        .warning-box p {
+            line-height: 1.7;
+        }
+
+        #warning-continue {
+            margin-top: 20px;
+            padding: 10px 30px;
+            font-size: 18px;
+            font-weight: bold;
+            cursor: pointer;
+            color: white;
+            background: #4a0404;
+            border: 2px solid red;
+            border-radius: 6px;
+            transition: .2s;
+        }
+
+        #warning-continue:hover {
+            background: red;
+            color: black;
+        }
+    </style>
+</head>
+
+<body>
+    <div id="warning-screen">
+        <div class="warning-box">
+            <h1>CẢNH BÁO</h1>
+
+            <p>
+                Trò chơi này có thể gây ra các vấn đề về sức khỏe cho một số người,
+                bao gồm chóng mặt, buồn nôn, co giật hoặc các triệu chứng khác liên
+                quan đến ánh sáng nhấp nháy.
+            </p>
+
+            <p>
+                Trò chơi có chứa yếu tố tâm lý, cảnh bạo lực, máu me và kinh dị.
+                Nếu bạn nhạy cảm với các nội dung này, vui lòng cân nhắc trước khi
+                tiếp tục.
+            </p>
+
+            <button id="warning-continue">
+                tiếp tục
+            </button>
+        </div>
+    </div>
+    <div id="story">
+        <img id="bg" src="" alt="">
+        <img id="left" src="" alt="Left Character" style="display:none;">
+        <img id="right" src="" alt="Right Character" style="display:none;">
+
+        <div id="dialogue">
+            <div id="name"></div>
+            <div id="text"></div>
+            <button id="next">Next</button>
+        </div>
+    </div>
+
+    <button id="nextGame" style="display:none;">Đi thôi</button>
+
+    <div id="rotate-screen">
+        <div class="rotate-box">
+            <h2>Xoay ngang màn hình</h2>
+            <p>Vui lòng quay thiết bị sang chế độ ngang để chơi tốt nhất.</p>
+        </div>
+    </div>
+
+    <audio id="bgm" src="theme.mp3" preload="auto" loop></audio>
+
+    <script>
+        function updateOrientationOverlay() {
+            const overlay = document.getElementById('rotate-screen');
+            if (window.matchMedia('(orientation: portrait)').matches) {
+                overlay.style.display = 'flex';
+            } else {
+                overlay.style.display = 'none';
+                if (screen.orientation && screen.orientation.lock) {
+                    screen.orientation.lock('landscape').catch(() => { });
+                }
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const bgm = document.getElementById("bgm");
+            const warning = document.getElementById("warning-screen");
+            const warningBtn = document.getElementById("warning-continue");
+
+            updateOrientationOverlay();
+
+            warningBtn.addEventListener("click", () => {
+
+                warning.style.display = "none";
+
+                if (window.AudioContext || window.webkitAudioContext) {
+                    const ctx = new (window.AudioContext || window.webkitAudioContext)();
+                    if (ctx.state === "suspended") {
+                        ctx.resume();
+                    }
+                }
+
+                bgm.currentTime = 0;
+                bgm.volume = 1;
+
+                bgm.play().catch(() => {
+                    console.log("Không thể phát nhạc.");
+                });
+            });
+
+            warningBtn.addEventListener("click", () => {
+
+                warning.style.display = "none";
+                overlay.style.display = "flex";
+
+            });
+
+            continueBtn.addEventListener("click", startAudio);
+            continueBtn.addEventListener("touchstart", startAudio);
+        });
+
+        window.addEventListener('resize', updateOrientationOverlay);
+        window.addEventListener('orientationchange', updateOrientationOverlay);
+    </script>
+    <script src="./main.js"></script>
+</body>
+
+</html>

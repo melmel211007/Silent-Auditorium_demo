@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Silent Auditorium</title>
+    <link rel="stylesheet" href="../OWARI/main.css">
+</head>
+
+<body>
+    <div id="start-screen">
+        <div class="start-box">
+            <h1>Silent Auditorium</h1>
+            <p>Chạm vào bắt đầu để vào câu chuyện.</p>
+            <button class="start-button" onclick="startStory()">BẮT ĐẦU</button>
+        </div>
+    </div>
+    <div id="rotate-screen">
+        <div class="rotate-box">
+            <h2>Xoay ngang màn hình</h2>
+            <p>Vui lòng quay thiết bị sang chế độ ngang để chơi tốt nhất.</p>
+        </div>
+    </div>
+    <script>
+        function updateOrientationOverlay() {
+            const overlay = document.getElementById('rotate-screen');
+            if (window.matchMedia('(orientation: portrait)').matches) {
+                overlay.style.display = 'flex';
+            } else {
+                overlay.style.display = 'none';
+                if (screen.orientation && screen.orientation.lock) {
+                    screen.orientation.lock('landscape').catch(() => { });
+                }
+            }
+        }
+
+        function startStory() {
+            window.location.href = '../story/index1.html';
+        }
+
+        window.addEventListener('resize', updateOrientationOverlay);
+        window.addEventListener('orientationchange', updateOrientationOverlay);
+        document.addEventListener('DOMContentLoaded', updateOrientationOverlay);
+    </script>
+</body>
+
+</html>
