@@ -161,7 +161,7 @@
             </div>
         </div>
 
-        <audio id="bgm" src="../story/theme.mp3" preload="auto" loop></audio>
+        <audio id="bgm" src="./story/theme.mp3" preload="auto" loop></audio>
 
     </div>
 
@@ -256,8 +256,8 @@
 
         const playerImages = [];
         const playerFrames = [
-            "../images/Ruru_talk.png",
-            "../images/Arsenic_wait.png"
+            "./images/Ruru_talk.png",
+            "./images/Arsenic_wait.png"
         ];
 
 
@@ -268,10 +268,10 @@
         });
 
         const monsterImg = new Image();
-        monsterImg.src = "../images/Arsenic_talk.png";
+        monsterImg.src = "./images/Arsenic_talk.png";
 
         const obstacleImg = new Image();
-        obstacleImg.src = "../images/Arsenicchibi.PNG";
+        obstacleImg.src = "./images/Arsenicchibi.PNG";
 
         let nextObstacle = 60;
 
@@ -315,7 +315,7 @@
 
         nextGameBtn.onclick = (e) => {
             e.stopPropagation();
-            window.location.href = "../runninggame_arse/run_arse.html";
+            window.location.href = "./runninggame_arse/run_arse.html";
         };
 
         function resetGame() {
