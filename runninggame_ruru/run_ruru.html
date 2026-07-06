@@ -167,7 +167,6 @@
 
     <script>
         function updateOrientationOverlay() {
-            const overlay = document.getElementById('rotate-screen');
             if (window.matchMedia('(orientation: portrait)').matches) {
                 overlay.style.display = 'flex';
             } else {
@@ -212,9 +211,6 @@
 
             });
 
-            continueBtn.addEventListener("click", startAudio);
-            continueBtn.addEventListener("touchstart", startAudio);
-        });
 
         window.addEventListener('resize', updateOrientationOverlay);
         window.addEventListener('orientationchange', updateOrientationOverlay);
