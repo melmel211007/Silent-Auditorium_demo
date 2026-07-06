@@ -445,29 +445,3 @@ body {
         font-size: 6vw;
     }
 }
-
-#rotate-screen {
-    display: none;
-}
-
-@media (orientation:portrait) {
-
-    #rotate-screen {
-        position: fixed;
-        inset: 0;
-        background: #000;
-        color: white;
-        display: flex;
-        flex-direction: column;
-        justify-content: center;
-        align-items: center;
-        z-index: 99999;
-        text-align: center;
-        font-size: 30px;
-    }
-
-    #game-container,
-    #start-screen {
-        display: none !important;
-    }
-}
