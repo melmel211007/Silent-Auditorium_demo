@@ -156,7 +156,7 @@ function update() {
 
         document.getElementById("back-button").onclick = () => {
             music.pause();
-            window.location.href = "../index.html";
+            window.location.href = "./index.html";
         };
     }
 
