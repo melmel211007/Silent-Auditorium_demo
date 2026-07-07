@@ -1,0 +1,508 @@
+<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>RUNNING OUT RURU</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            user-select: none;
+            -webkit-user-select: none;
+        }
+
+        body {
+            margin: 0;
+            padding: 10px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            overflow: hidden;
+            background: radial-gradient(circle at center, #2b0015 0%, #110008 35%, #050505 100%);
+            font-family: Arial, sans-serif;
+        }
+
+        .game-container {
+            position: relative;
+            width: 100%;
+            max-width: 900px;
+            aspect-ratio: 900 / 300;
+        }
+
+        canvas {
+            width: 100%;
+            height: 100%;
+            display: block;
+            border: 3px solid #7d0d26;
+            border-radius: 12px;
+            box-shadow:
+                0 0 30px rgba(255, 0, 80, .35),
+                inset 0 0 80px rgba(0, 0, 0, .7);
+            background: #090909;
+        }
+
+        .game-btn {
+            position: absolute;
+            display: none;
+            padding: 10px 24px;
+            font-size: 4vw;
+            font-size: 18px;
+            font-weight: 900;
+            letter-spacing: 2px;
+            color: #ffffff;
+            background: #4a0404;
+            border: 2px solid #ff0000;
+            border-radius: 4px;
+            cursor: pointer;
+            box-shadow: 0 0 15px rgba(255, 0, 0, 0.4);
+            transition: 0.2s ease;
+            z-index: 10;
+        }
+
+        @media (min-width: 600px) {
+            .game-btn {
+                font-size: 16px;
+            }
+        }
+
+        .game-btn:shadow,
+        .game-btn:hover {
+            background: #ff0000;
+            color: #000000;
+            box-shadow: 0 0 25px #ff0000;
+            transform: scale(1.05);
+        }
+
+        .touch-hint {
+            color: rgba(255, 255, 255, 0.4);
+            font-size: 14px;
+            margin-top: 10px;
+            text-align: center;
+            pointer-events: none;
+        }
+
+        #warning-screen {
+            position: fixed;
+            inset: 0;
+            background: radial-gradient(circle at center, #2b0015 0%, #110008 35%, #050505 100%);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+        }
+
+        .warning-box {
+            width: min(700px, 90%);
+            text-align: center;
+            color: white;
+        }
+
+        .warning-box h1 {
+            color: #ff0000;
+            text-shadow: 0 0 10px red;
+        }
+
+        .warning-box p {
+            line-height: 1.7;
+        }
+
+        #warning-continue {
+            margin-top: 20px;
+            padding: 10px 30px;
+            font-size: 18px;
+            font-weight: bold;
+            cursor: pointer;
+            color: white;
+            background: #4a0404;
+            border: 2px solid red;
+            border-radius: 6px;
+            transition: .2s;
+        }
+
+        #warning-continue:hover {
+            background: red;
+            color: black;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div id="warning-screen">
+        <div class="warning-box">
+            <h1>HƯỚNG DẪN</h1>
+
+            <p>
+                chạm vào màn hình hoặc nhấn phím Space để nhảy qua các chướng ngại vật.
+            </p>
+
+            <p>
+                khi đạt 2000 điểm bạn sẽ mở khóa cốt truyện tiếp theo, hãy cố gắng trốn thoát khỏi quái vật!
+            </p>
+
+            <button id="warning-continue">
+                tiếp tục
+            </button>
+        </div>
+    </div>
+
+    <div class="game-container">
+        <button id="restartBtn" class="game-btn">Chơi lại</button>
+        <button id="nextGameBtn" class="game-btn">Chơi tiếp</button>
+        <canvas id="game" width="900" height="300"></canvas>
+
+        <div id="rotate-screen">
+            <div class="rotate-box">
+                <h2>Xoay ngang màn hình</h2>
+                <p>Vui lòng quay thiết bị sang chế độ ngang để chơi tốt nhất.</p>
+            </div>
+        </div>
+
+        <audio id="bgm" src="./8bitxapxinh.mp3" preload="auto" loop></audio>
+
+    </div>
+
+    <script>
+        function updateOrientationOverlay() {
+            const overlay = document.getElementById('rotate-screen');
+            if (window.matchMedia('(orientation: portrait)').matches) {
+                overlay.style.display = 'flex';
+            } else {
+                overlay.style.display = 'none';
+                if (screen.orientation && screen.orientation.lock) {
+                    screen.orientation.lock('landscape').catch(() => { });
+                }
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const bgm = document.getElementById("bgm");
+            const warning = document.getElementById("warning-screen");
+            const warningBtn = document.getElementById("warning-continue");
+
+            updateOrientationOverlay();
+
+            warningBtn.addEventListener("click", () => {
+
+                warning.style.display = "none";
+
+                if (window.AudioContext || window.webkitAudioContext) {
+                    const ctx = new (window.AudioContext || window.webkitAudioContext)();
+                    if (ctx.state === "suspended") {
+                        ctx.resume();
+                    }
+                }
+
+                bgm.currentTime = 0;
+                bgm.volume = 1;
+
+                bgm.play().catch(() => {
+                    console.log("Không thể phát nhạc.");
+                });
+            });
+
+            warningBtn.addEventListener("click", () => {
+
+                warning.style.display = "none";
+                overlay.style.display = "flex";
+
+            });
+
+            continueBtn.addEventListener("click", startAudio);
+            continueBtn.addEventListener("touchstart", startAudio);
+        });
+
+        window.addEventListener('resize', updateOrientationOverlay);
+        window.addEventListener('orientationchange', updateOrientationOverlay);
+
+        const canvas = document.getElementById("game");
+        const ctx = canvas.getContext("2d");
+        const restartBtn = document.getElementById("restartBtn");
+        const nextGameBtn = document.getElementById("nextGameBtn");
+        const container = document.querySelector(".game-container");
+
+        const ground = 250;
+        const WINNING_SCORE = 21000;
+        const BASE_GAME_SPEED = 4;
+
+        let player = {
+            x: canvas.width / 2 - 20,
+            y: ground - 40,
+            w: 30,
+            h: 40,
+            vy: 0,
+            jumping: false
+        };
+
+        let monster = {
+            x: 20,
+            y: ground - 100,
+            w: 160,
+            h: 160
+        };
+
+        let gravity = 0.5;
+        let obstacles = [];
+        let score = 0;
+        let gameOver = false;
+        let gameWon = false;
+
+        let frameCounter = 0;
+        let currentFrameIndex = 0;
+
+        const playerImages = [];
+        const playerFrames = [
+            "../images/ruruchibirun1.PNG",
+            "../images/ruruchibirun2.PNG"
+        ];
+
+
+        playerFrames.forEach(src => {
+            const img = new Image();
+            img.src = src;
+            playerImages.push(img);
+        });
+
+        const monsterImg = new Image();
+        monsterImg.src = "../images/gr.PNG";
+
+        const obstacleImg = new Image();
+        obstacleImg.src = "../images/gai.PNG";
+
+        let nextObstacle = 60;
+
+        function handleAction(e) {
+            if (e && e.preventDefault) e.preventDefault();
+
+            if (!gameOver && !gameWon) {
+
+                if (!player.jumping) {
+                    player.vy = -13;
+                    player.jumping = true;
+                }
+
+            }
+            else {
+
+                resetGame();
+
+            }
+        }
+
+        document.addEventListener("keydown", (e) => {
+            if (e.code === "Space") {
+                handleAction(e);
+            }
+        });
+
+        canvas.addEventListener("touchstart", (e) => {
+            handleAction(e);
+        }, { passive: false });
+
+        restartBtn.onclick = (e) => {
+            e.stopPropagation();
+            resetGame();
+        };
+
+        nextGameBtn.onclick = (e) => {
+            e.stopPropagation();
+            window.location.href = "../runninggame_arse/run_arse.html";
+        };
+
+        function resetGame() {
+            player.x = canvas.width / 2 - 20;
+            player.y = ground - 50;
+            player.vy = 0;
+            player.jumping = false;
+            monster.x = 10;
+            obstacles = [];
+            score = 0;
+            gameOver = false;
+            gameWon = false;
+            nextObstacle = 60;
+
+            restartBtn.style.display = "none";
+            nextGameBtn.style.display = "none";
+        }
+
+        function update() {
+            if (gameOver || gameWon) {
+                if (gameOver) {
+                    restartBtn.style.left = "50%";
+                    restartBtn.style.transform = "translateX(-50%)";
+                    restartBtn.style.top = "63%";
+                    restartBtn.style.display = "block";
+                } else if (gameWon) {
+                    restartBtn.style.display = "none";
+
+                    nextGameBtn.style.left = "50%";
+                    nextGameBtn.style.transform = "translateX(-50%)";
+                    nextGameBtn.style.top = "63%";
+                    nextGameBtn.style.display = "block";
+                }
+                return;
+            }
+
+            score++;
+
+            if (score >= WINNING_SCORE) {
+                gameWon = true;
+                return;
+            }
+
+            nextObstacle--;
+            if (nextObstacle <= 0) {
+                spawnObstacle();
+                nextObstacle = 90 + Math.random() * 100;
+            }
+
+            player.vy += gravity;
+            player.y += player.vy;
+
+            if (player.y > ground - player.h) {
+                player.y = ground - player.h;
+                player.vy = 0;
+                player.jumping = false;
+            }
+
+            obstacles.forEach(o => {
+                o.x -= BASE_GAME_SPEED;
+            });
+
+            obstacles.forEach(o => {
+                if (
+                    player.x < o.x + o.w &&
+                    player.x + player.w > o.x &&
+                    player.y < o.y + o.h &&
+                    player.y + player.h > o.y
+                ) {
+                    monster.x += 120;
+                    o.x = -100;
+                }
+            });
+
+            frameCounter++;
+            if (frameCounter > 14) {
+                frameCounter = 0;
+                currentFrameIndex = (currentFrameIndex + 1) % playerImages.length;
+            }
+
+            obstacles = obstacles.filter(o => o.x > -50);
+
+            if (monster.x + monster.w >= player.x) {
+                monster.x = player.x - monster.w;
+                gameOver = true;
+            }
+        }
+
+        function draw() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            ctx.fillStyle = "#090909";
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            const g = ctx.createLinearGradient(0, 0, 0, 250);
+            g.addColorStop(0, "rgba(180,0,70,0.35)");
+            g.addColorStop(1, "rgba(0,0,0,0)");
+            ctx.fillStyle = g;
+            ctx.fillRect(0, 0, canvas.width, 180);
+
+            ctx.fillStyle = "#3a2b23";
+            ctx.fillRect(0, ground, 900, 60);
+
+            for (let i = 0; i < 900; i += 35) {
+                ctx.strokeStyle = "#56443a";
+                ctx.beginPath();
+                ctx.moveTo(i, ground);
+                ctx.lineTo(i + 20, 300);
+                ctx.stroke();
+            }
+
+            obstacles.forEach(o => {
+                if (obstacleImg.complete) {
+                    ctx.drawImage(obstacleImg, o.x, o.y, o.w, o.h);
+                } else {
+                    ctx.fillStyle = "green";
+                    ctx.fillRect(o.x, o.y, o.w, o.h);
+                }
+            });
+
+            const activePlayerImg = playerImages[currentFrameIndex];
+            if (activePlayerImg && activePlayerImg.complete) {
+                ctx.drawImage(activePlayerImg, player.x, player.y, player.w, player.h);
+            } else {
+                ctx.fillStyle = "black";
+                ctx.fillRect(player.x, player.y, player.w, player.h);
+            }
+
+            monster.y = ground - monster.h;
+            if (monsterImg.complete) {
+                ctx.drawImage(monsterImg, monster.x, monster.y, monster.w, monster.h);
+            } else {
+                ctx.fillStyle = "red";
+                ctx.fillRect(monster.x, monster.y, monster.w, monster.h);
+            }
+
+            const shadow = ctx.createLinearGradient(0, 0, 150, 0);
+            shadow.addColorStop(0, "rgba(0,0,0,.8)");
+            shadow.addColorStop(1, "rgba(0,0,0,0)");
+            ctx.fillStyle = shadow;
+            ctx.fillRect(0, 0, 150, 300);
+
+            const shadow2 = ctx.createLinearGradient(900, 0, 750, 0);
+            shadow2.addColorStop(0, "rgba(0,0,0,.8)");
+            shadow2.addColorStop(1, "rgba(0,0,0,0)");
+            ctx.fillStyle = shadow2;
+            ctx.fillRect(750, 0, 150, 300);
+
+            ctx.fillStyle = "#ffffff";
+            ctx.font = "20px Arial";
+            ctx.fillText("ĐIỂM   " + score, 620, 35);
+
+            if (gameOver) {
+                ctx.textAlign = "center";
+                ctx.fillStyle = "#ff2f55";
+                ctx.font = "bold 46px Arial";
+                ctx.fillText("QUÁI VẬT ĐÃ ĂN BẠN", canvas.width / 2, 120);
+                ctx.textAlign = "left";
+            }
+
+            if (gameWon) {
+                ctx.textAlign = "center";
+                ctx.fillStyle = "#ff2f55";
+                ctx.font = "bold 45px Arial";
+                ctx.fillText("MỞ KHÓA PHẦN TIẾP!", canvas.width / 2, 120);
+
+                ctx.fillStyle = "#ffffff";
+                ctx.font = "20px Arial";
+                ctx.fillText("Bạn đã trốn thoát thành công!", canvas.width / 2, 170);
+                ctx.textAlign = "left";
+            }
+        }
+
+        function spawnObstacle() {
+            const width = 25 + Math.random() * 10;
+            const height = 25 + Math.random() * 15;
+
+            obstacles.push({
+                x: canvas.width,
+                y: ground - height,
+                w: width,
+                h: height
+            });
+        }
+
+        function loop() {
+            update();
+            draw();
+            requestAnimationFrame(loop);
+        }
+
+        loop();
+    </script>
+</body>
+
+</html>
