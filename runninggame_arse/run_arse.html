@@ -708,7 +708,7 @@
                 ship.vy += inputY * ship.speed;
 
 
-                fuel -= 0.15;
+                fuel -= 0.05;
             }
 
 
@@ -716,7 +716,7 @@
             ship.vy *= 0.985;
 
 
-            const moveSpeed = 5;
+            const moveSpeed = 4;
 
             if (inputX !== 0 || inputY !== 0) {
                 ship.vx = inputX * moveSpeed;
@@ -1032,7 +1032,7 @@
             }
 
 
-            if (hp <= 0) {
+            if (fuel <= 0 || hp <= 0) {
 
                 gameOver = true;
 
